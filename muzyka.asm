@@ -58,7 +58,7 @@ playNotes:
 playActual: CALL    getNote
             CALL    getOctave
             CALL    getLength
-            XOR     ch, ch
+            XOR     ch,ch
             MOV     cl,7
             SUB     cl,currOct
             MOV     ax,currNote
@@ -71,21 +71,23 @@ playActual: CALL    getNote
             OR      al,00000011b
             OUT     61h,al
             MOV     cl,currLength
+waitLoop:
+            CALL    waitSec
+            LOOP    waitLoop
+            JMP     playNotes
+            IN      al,61h
+            AND     al,11111100b
+            OUT     61h,al
+            RET
+waitSec:    
             XOR     al,al
             MOV     ah,86h
             MOV     dx,0FFFFh
-waitLoop:
             PUSH    cx
             XOR     cx,cx
             INT     15h
             POP     cx
-            LOOP    waitLoop
-            IN      al,61h
-            AND     al,11111100b
-            OUT     61h,al
-            JMP     playNotes
             RET
-
 getNote:
             MOV     dx,noteS
             MOV     al,fileReadBuf[0]
@@ -158,13 +160,13 @@ getLength:
             MOV     dx,lenS
 cmpQuarter: CMP     al,'Q'
             JNE     cmpHalf
-            MOV     dx,lenS
+            MOV     dx,lenQ
 cmpHalf:    CMP     al,'H'
             JNE     cmpFull
-            MOV     dx,lenS
+            MOV     dx,lenH
 cmpFull:    CMP     al,'F'
             JNE     lenRet
-            MOV     dx,lenS
+            MOV     dx,lenF
 lenRet:     RET
 prog ends
 

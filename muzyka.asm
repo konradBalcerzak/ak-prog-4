@@ -18,6 +18,11 @@ noFileErr:  MOV     ah,09h
             MOV     dx,offset errNoFile
             INT     21h
             JMP     musicEnd
+noArgERR:   POP     ds
+            MOV     ah,09h
+            MOV     dx,offset errNoArg
+            INT     21h
+            JMP     musicEnd
 getFile:    PUSH    es
             PUSH    ds
             POP     es
@@ -29,6 +34,8 @@ getFile:    PUSH    es
             MOV     si,80h
             XOR     ch,ch
             MOV     cl,[si]
+			CMP     cl,0
+			JE		noArgERR
             DEC     cl
             POP     ds
             MOV     argLen,cl
@@ -80,7 +87,7 @@ waitLoop:   PUSH    cx
             IN      al,61h
             AND     al,11111100b
             OUT     61h,al
-            ;CALL    moveCursor
+           ;CALL    moveCursor
             JMP     playNotes
 songEnd:    RET
 waitSec:    MOV     ah,86h
@@ -209,6 +216,7 @@ lenH        dw 4
 lenF        dw 16
 
 errNoFile   db "Nie znaleziono pliku",13,10,'$'
+errNoArg    db "Program wymaga podania nazwy pliku w argumencie",13,10,'$'
 
 dane ends
 

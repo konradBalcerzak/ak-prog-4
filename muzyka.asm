@@ -1,21 +1,24 @@
 prog segment
 assume  cs:prog, ds:dane, ss:stosik
-start:
-            MOV     ax,dane
+start:      MOV     ax,dane
             MOV     ds,ax
             MOV     ax,stosik
             MOV     ss,ax
             MOV     sp,offset szczyt
-musicStart:
-            CALL    getFilename
+musicStart: CALL    getFile
             CALL    openFile
+            MOV     ax,fileHandle
+            CMP     ax,5
+            JL      noFileErr
             CALL    playNotes
-musicEnd:
-            MOV     ah,4ch
+musicEnd:   MOV     ah,4ch
             MOV     al,0
             INT     21h
-getFilename:
-            PUSH    es
+noFileErr:  MOV     ah,09h
+            MOV     dx,offset errNoFile
+            INT     21h
+            JMP     musicEnd
+getFile:    PUSH    es
             PUSH    ds
             POP     es
             MOV     ah,62h
@@ -33,63 +36,65 @@ getFilename:
             MOV     ds,bx
             MOV     si,82h
             MOV     di,offset fileName
-        rep MOVSB
+            REP     MOVSB
             POP     ds
             POP     es
             MOV     fileName[di],00h
             RET
-openFile:
-            MOV     ax,3D00h
+openFile:   MOV     ax,3D00h
             MOV     dx,offset fileName
             STC
             CMC
             INT     21h
             MOV     fileHandle,ax
             RET
-playNotes:
-            MOV     ah,3fh
+playNotes:  MOV     ah,3fh
             MOV     bx,fileHandle
             MOV     cx,5
             MOV     dx,offset fileReadBuf
             INT     21h
-            CMP     ax,0
-            JNE     playActual
-            RET
-playActual: CALL    getNote
+            CMP     ax,cx
+            JNE     songEnd
+            CALL    getNote
             CALL    getOctave
             CALL    getLength
             XOR     ch,ch
             MOV     cl,7
             SUB     cl,currOct
             MOV     ax,currNote
+            CMP     ax,1
+            JE      sendNote
             SHL     ax,cl
             MOV     currNote,ax
-            OUT     42h,al
+sendNote:   OUT     42h,al
             MOV     al,ah
             OUT     42h,al
             IN      al,61h
             OR      al,00000011b
             OUT     61h,al
-            MOV     cl,currLength
-waitLoop:
+            MOV     cx,currLength
+waitLoop:   PUSH    cx
             CALL    waitSec
+            POP     cx
             LOOP    waitLoop
-            JMP     playNotes
             IN      al,61h
             AND     al,11111100b
             OUT     61h,al
-            RET
-waitSec:    
-            XOR     al,al
-            MOV     ah,86h
+            ;CALL    moveCursor
+            JMP     playNotes
+songEnd:    RET
+waitSec:    MOV     ah,86h
             MOV     dx,0FFFFh
-            PUSH    cx
             XOR     cx,cx
             INT     15h
-            POP     cx
             RET
-getNote:
-            MOV     dx,noteS
+moveCursor: XOR     cx,cx
+            MOV     dx,5
+            MOV     ax,4201h
+            MOV     bx,fileHandle
+            INT     21h
+            RET
+getNote:    MOV     dx,noteS
             MOV     al,fileReadBuf[0]
             CMP     al,'C'
             JNE     cmpCis
@@ -142,32 +147,31 @@ cmpAis:     CMP     al,'a'
 cmpB:       CMP     al,'B'
             JNE     noteRet
             MOV     dx,noteB
-noteRet:    
-            MOV     currNote,dx
+noteRet:    MOV     currNote,dx
             RET
-
-getOctave:
-            MOV     al,fileReadBuf[1]
+getOctave:  MOV     al,fileReadBuf[1]
             SUB     al,'0'
             MOV     currOct,al
             RET
-
-getLength:
-            XOR     dx,4
-            MOV     al,fileReadBuf[2]
+getLength:  MOV     al,fileReadBuf[2]
             CMP     al,'S'
             JNE     cmpQuarter
             MOV     dx,lenS
+            JMP     lenRet
 cmpQuarter: CMP     al,'Q'
             JNE     cmpHalf
             MOV     dx,lenQ
+            JMP     lenRet
 cmpHalf:    CMP     al,'H'
             JNE     cmpFull
             MOV     dx,lenH
+            JMP     lenRet
 cmpFull:    CMP     al,'F'
             JNE     lenRet
             MOV     dx,lenF
-lenRet:     RET
+            JMP     lenRet
+lenRet:     MOV     currlength,dx
+            RET
 prog ends
 
 
@@ -181,7 +185,7 @@ fileReadBuf db 5 dup(?)
 
 currSymbol  db ?
 currOct     db ?
-currlength  db ?
+currlength  dw ?
 currNote    dw ?
 
 noteC       dw 570
@@ -192,7 +196,7 @@ noteE       dw 452
 noteEs      dw 439
 noteF       dw 427
 noteFs      dw 403
-noteG       dw 3136
+noteG       dw 380
 noteGs      dw 359
 noteA       dw 338
 noteAs      dw 319
@@ -203,6 +207,8 @@ lenS        dw 1
 lenQ        dw 2
 lenH        dw 4
 lenF        dw 16
+
+errNoFile   db "Nie znaleziono pliku",13,10,'$'
 
 dane ends
 

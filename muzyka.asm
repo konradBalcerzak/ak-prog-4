@@ -87,19 +87,12 @@ waitLoop:   PUSH    cx
             IN      al,61h
             AND     al,11111100b
             OUT     61h,al
-           ;CALL    moveCursor
             JMP     playNotes
 songEnd:    RET
 waitSec:    MOV     ah,86h
             MOV     dx,0FFFFh
             XOR     cx,cx
             INT     15h
-            RET
-moveCursor: XOR     cx,cx
-            MOV     dx,5
-            MOV     ax,4201h
-            MOV     bx,fileHandle
-            INT     21h
             RET
 getNote:    MOV     dx,noteS
             MOV     al,fileReadBuf[0]
@@ -194,7 +187,7 @@ currSymbol  db ?
 currOct     db ?
 currlength  dw ?
 currNote    dw ?
-
+            dw 0
 noteC       dw 570
 noteCs      dw 538
 noteD       dw 507

@@ -96,57 +96,29 @@ waitSec:    MOV     ah,86h
             RET
 getNote:    MOV     dx,noteS
             MOV     al,fileReadBuf[0]
-            CMP     al,'C'
-            JNE     cmpCis
-            MOV     dx,noteC
-            JMP     noteRet
-cmpCis:     CMP     al,'c'
-            JNE     cmpD
-            MOV     dx,noteCs
-            JMP     noteRet
-cmpD:       CMP     al,'D'
-            JNE     cmpDis
-            MOV     dx,noteD
-            JMP     noteRet
-cmpDis:     CMP     al,'d'
-            JNE     cmpE
-            MOV     dx,noteDs
-            JMP     noteRet
-cmpE:       CMP     al,'E'
-            JNE     cmpEis
-            MOV     dx,noteE
-            JMP     noteRet
-cmpEis:     CMP     al,'e'
-            JNE     cmpF
-            MOV     dx,noteEs
-            JMP     noteRet
-cmpF:       CMP     al,'F'
-            JNE     cmpFis
-            MOV     dx,noteF
-            JMP     noteRet
-cmpFis:     CMP     al,'f'
-            JNE     cmpG
-            MOV     dx,noteFs
-            JMP     noteRet
-cmpG:       CMP     al,'G'
-            JNE     cmpGis
-            MOV     dx,noteG
-            JMP     noteRet
-cmpGis:     CMP     al,'g'
-            JNE     cmpA
-            MOV     dx,noteGs
-            JMP     noteRet
-cmpA:       CMP     al,'A'
-            JNE     cmpAis
-            MOV     dx,noteA
-            JMP     noteRet
-cmpAis:     CMP     al,'a'
-            JNE     cmpB
-            MOV     dx,noteAs
-            JMP     noteRet
-cmpB:       CMP     al,'B'
-            JNE     noteRet
-            MOV     dx,noteB
+            ;validate(non allowed symbol will be pause)
+validateN:  SUB     al,'A'
+			CMP     al,32
+            JB      chooseN
+			SUB     al,32
+			JMP     chooseHN
+            ;note
+chooseN:    CMP     al,6
+			JG      noteRet
+			MOV     bx,offset note
+            JMP     selectNote
+           ;halfnote
+chooseHN:   CMP     al,6
+			JG      noteRet
+			MOV     bx,offset halfNote
+            JMP     selectNote
+           ;note selection
+selectNote: XOR     ah,ah
+			;if you use si program breaks for some reason
+			MOV     cl,2
+			MUL     cl
+            MOV     di,ax
+            MOV     dx,[bx][di]
 noteRet:    MOV     currNote,dx
             RET
 getOctave:  MOV     al,fileReadBuf[1]
@@ -176,7 +148,9 @@ prog ends
 
 
 dane segment
-
+note  		dw 338,301,570,507,452,427,380
+halfNote    dw 319,1,538,479,439,403,359
+noteS       dw 1
 pspSeg      dw ?
 argLen      db ?
 fileName    db 127 dup(?)
@@ -188,20 +162,8 @@ currOct     db ?
 currlength  dw ?
 currNote    dw ?
             dw 0
-noteC       dw 570
-noteCs      dw 538
-noteD       dw 507
-noteDs      dw 479
-noteE       dw 452
-noteEs      dw 439
-noteF       dw 427
-noteFs      dw 403
-noteG       dw 380
-noteGs      dw 359
-noteA       dw 338
-noteAs      dw 319
-noteB       dw 301
-noteS       dw 1
+
+
 
 lenS        dw 1
 lenQ        dw 2

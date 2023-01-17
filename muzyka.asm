@@ -126,22 +126,23 @@ getOctave:  MOV     al,fileReadBuf[1]
             MOV     currOct,al
             RET
 getLength:  MOV     al,fileReadBuf[2]
-            CMP     al,'S'
-            JNE     cmpQuarter
-            MOV     dx,lenS
-            JMP     lenRet
-cmpQuarter: CMP     al,'Q'
-            JNE     cmpHalf
-            MOV     dx,lenQ
-            JMP     lenRet
-cmpHalf:    CMP     al,'H'
-            JNE     cmpFull
-            MOV     dx,lenH
-            JMP     lenRet
-cmpFull:    CMP     al,'F'
-            JNE     lenRet
-            MOV     dx,lenF
-            JMP     lenRet
+			XOR     dh,dh
+			MOV		dl,lenDefault
+			CMP     al,48
+			JL      lenRet
+			CMP     al,57
+			JLE     lenNum
+			CMP     al,65
+			JL      lenRet
+			CMP     al,70
+			JLE     lenLet
+			JMP     lenRet
+lenNum:		SUB     al,48
+			MOV     dl,al
+			JMP     lenRet
+lenLet:		SUB     al,55
+			MOV		dl,al
+			JMP     lenRet
 lenRet:     MOV     currlength,dx
             RET
 prog ends
@@ -151,6 +152,7 @@ dane segment
 note  		dw 338,301,570,507,452,427,380
 halfNote    dw 319,1,538,479,439,403,359
 noteS       dw 1
+lenDefault  db 4
 pspSeg      dw ?
 argLen      db ?
 fileName    db 127 dup(?)
@@ -165,10 +167,6 @@ currNote    dw ?
 
 
 
-lenS        dw 1
-lenQ        dw 2
-lenH        dw 4
-lenF        dw 16
 
 errNoFile   db "Nie znaleziono pliku",13,10,'$'
 errNoArg    db "Program wymaga podania nazwy pliku w argumencie",13,10,'$'

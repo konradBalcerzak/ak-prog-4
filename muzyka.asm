@@ -34,8 +34,8 @@ getFile:    PUSH    es
             MOV     si,80h
             XOR     ch,ch
             MOV     cl,[si]
-			CMP     cl,0
-			JE		noArgERR
+            CMP     cl,0
+            JE      noArgERR
             DEC     cl
             POP     ds
             MOV     argLen,cl
@@ -98,25 +98,25 @@ getNote:    MOV     dx,noteS
             MOV     al,fileReadBuf[0]
             ;validate(non allowed symbol will be pause)
 validateN:  SUB     al,'A'
-			CMP     al,32
+            CMP     al,32
             JB      chooseN
-			SUB     al,32
-			JMP     chooseHN
+            SUB     al,32
+            JMP     chooseHN
             ;note
 chooseN:    CMP     al,6
-			JG      noteRet
-			MOV     bx,offset note
+            JG      noteRet
+            MOV     bx,offset note
             JMP     selectNote
            ;halfnote
 chooseHN:   CMP     al,6
-			JG      noteRet
-			MOV     bx,offset halfNote
+            JG      noteRet
+            MOV     bx,offset halfNote
             JMP     selectNote
            ;note selection
 selectNote: XOR     ah,ah
-			;if you use si program breaks for some reason
-			MOV     cl,2
-			MUL     cl
+           ;if you use si program breaks for some reason
+            MOV     cl,2
+            MUL     cl
             MOV     di,ax
             MOV     dx,[bx][di]
 noteRet:    MOV     currNote,dx
@@ -126,30 +126,30 @@ getOctave:  MOV     al,fileReadBuf[1]
             MOV     currOct,al
             RET
 getLength:  MOV     al,fileReadBuf[2]
-			XOR     dh,dh
-			MOV		dl,lenDefault
-			CMP     al,48
-			JL      lenRet
-			CMP     al,57
-			JLE     lenNum
-			CMP     al,65
-			JL      lenRet
-			CMP     al,70
-			JLE     lenLet
-			JMP     lenRet
-lenNum:		SUB     al,48
-			MOV     dl,al
-			JMP     lenRet
-lenLet:		SUB     al,55
-			MOV		dl,al
-			JMP     lenRet
+            XOR     dh,dh
+            MOV     dl,lenDefault
+            CMP     al,48
+            JL      lenRet
+            CMP     al,57
+            JLE     lenNum
+            CMP     al,65
+            JL      lenRet
+            CMP     al,70
+            JLE     lenLet
+            JMP     lenRet
+lenNum:     SUB     al,48
+            MOV     dl,al
+            JMP     lenRet
+lenLet:     SUB     al,55
+            MOV     dl,al
+            JMP     lenRet
 lenRet:     MOV     currlength,dx
             RET
 prog ends
 
 
 dane segment
-note  		dw 338,301,570,507,452,427,380
+note        dw 338,301,570,507,452,427,380
 halfNote    dw 319,1,538,479,439,403,359
 noteS       dw 1
 lenDefault  db 4

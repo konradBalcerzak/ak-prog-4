@@ -94,29 +94,29 @@ waitSec:    MOV     ah,86h
             XOR     cx,cx
             INT     15h
             RET
-getNote:    MOV     dx,halfNote[1];default: silence (divisor = 1)
+getNote:    MOV     dx,halfNote[1]; default: silence (divisor = 1)
             MOV     al,fileReadBuf[0]
-            ;validate(non allowed symbol will be pause)
+            ; validate(non allowed symbol will be pause)
 validateN:  SUB     al,'A'
-            ;is full note
+            ; is full note
             CMP     al,20h
             JB      chooseN
-            ;is sharp note
+            ; is sharp note
             SUB     al,20h
             JMP     chooseHN
-            ;full note
+            ; full note
 chooseN:    CMP     al,6
             JG      noteRet
             MOV     bx,offset note
             JMP     selectNote
-           ;half note
+           ; half note
 chooseHN:   CMP     al,6
             JG      noteRet
             MOV     bx,offset halfNote
             JMP     selectNote
-           ;note selection
+           ; note selection
 selectNote: XOR     ah,ah
-           ;if you use si program breaks for some reason
+           ; if you use si program breaks for some reason
             MOV     cl,2
             MUL     cl
             MOV     di,ax
@@ -139,11 +139,11 @@ getLength:  MOV     al,fileReadBuf[2]
             CMP     al,'F'
             JLE     lenHex
             JMP     lenRet
-            ;Convert 0-9 chars to 0-9 integers
+            ; Convert 0-9 chars to 0-9 integers
 lenDec:     SUB     al,'0'
             MOV     dl,al
             JMP     lenRet
-            ;Convert A-F chars to 10-16 integers
+            ; Convert A-F chars to 10-16 integers
 lenHex:     SUB     al,55
             MOV     dl,al
             JMP     lenRet

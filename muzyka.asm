@@ -59,6 +59,8 @@ playNotes:  MOV     ah,3fh
             MOV     bx,fileHandle
             MOV     cx,5
             MOV     dx,offset fileReadBuf
+            STC
+            CMC
             INT     21h
             CMP     ax,cx
             JNE     songEnd
@@ -94,7 +96,7 @@ waitSec:    MOV     ah,86h
             XOR     cx,cx
             INT     15h
             RET
-getNote:    MOV     dx,halfNote[1]; default: silence (divisor = 1)
+getNote:    MOV     dx,halfNote[2]; default: silence (divisor = 1)
             MOV     al,fileReadBuf[0]
             ; validate(non allowed symbol will be pause)
 validateN:  SUB     al,'A'
@@ -159,6 +161,7 @@ lenDefault  db 4
 pspSeg      dw ?
 argLen      db ?
 fileName    db 127 dup(?)
+            dw 0
 fileHandle  dw ?
 fileReadBuf db 5 dup(?)
 
